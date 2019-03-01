@@ -41,7 +41,7 @@ func TestInit(t *testing.T) {
 		}
 
 		var i in
-		if err := Load(&i, &Option{}); err != nil {
+		if err := Load(&i); err != nil {
 			t.Fatal(err)
 		}
 
@@ -89,7 +89,7 @@ func TestInit(t *testing.T) {
 		}
 
 		var i in
-		err := Load(&i, &Option{})
+		err := Load(&i)
 		if err == nil {
 			t.Fatal("must be err")
 		}
@@ -129,7 +129,7 @@ func TestInit(t *testing.T) {
 		}
 
 		var i in
-		if err := Load(&i, &Option{}); err != nil {
+		if err := Load(&i); err != nil {
 			t.Fatal(err)
 		}
 

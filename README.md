@@ -41,7 +41,7 @@ func main() {
     var conf Config
     
     // load environment variables with `Load` method
-    if err := envconf.Load(&conf, &envconf.Option{}); err != nil {
+    if err := envconf.Load(&conf); err != nil {
     	log.Fatal(err)
     }
     
@@ -84,7 +84,7 @@ type Config struct {
 var conf Config
 
 	// load environment variables with `Load` method
-if err := envconf.Load(&conf, &envconf.Option{}); err != nil {
+if err := envconf.Load(&conf); err != nil {
 	log.Fatal(err) // should not be error
 }
 
@@ -93,7 +93,7 @@ log.Printf("%+v\n", conf) // 2019/03/01 16:57:57 {DBHost:localhost DBPort:0}
 conf2 := Config{DBPort: 12345} // passing default param
 
 // load environment variables with `Load` method
-if err := envconf.Load(&conf2, &envconf.Option{}); err != nil {
+if err := envconf.Load(&conf2); err != nil {
 	log.Fatal(err)
 }
 
@@ -109,7 +109,7 @@ log.Printf("%+v\n", conf2) // 2019/03/01 16:57:57 {DBHost:localhost DBPort:12345
 Go code.
 ```go
 // load environment variables and dotenv variables with `Load` method
-if err := envconf.Load(&conf, &envconf.Option{UseDotEnv: true}); err != nil {
+if err := envconf.Load(&conf, envconf.UseDotEnv()); err != nil {
 	log.Fatal(err)
 }
 log.Printf("%+v\n", conf)

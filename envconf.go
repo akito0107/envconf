@@ -25,12 +25,31 @@ type environmentVariableNotFound interface {
 	EnvironmentVariableNotFound() (envname string)
 }
 
-type Option struct {
+type option struct {
 	UseDotEnv       bool
 	DotEnvNameAlias string
 }
 
-func Load(i interface{}, option *Option) error {
+type Option func(*option)
+
+func UseDotEnv() Option {
+	return func(opt *option) {
+		opt.UseDotEnv = true
+	}
+}
+
+func DotEnvNameAlias(filename string) Option {
+	return func(opt *option) {
+		opt.DotEnvNameAlias = filename
+	}
+}
+
+func Load(i interface{}, opts ...Option) error {
+	option := &option{}
+	for _, o := range opts {
+		o(option)
+	}
+
 	if reflect.TypeOf(i).Kind() != reflect.Ptr {
 		return &NotPointerType{}
 	}

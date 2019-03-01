@@ -16,7 +16,7 @@ func main() {
 	var conf Config
 
 	// load environment variables with `Load` method
-	if err := envconf.Load(&conf, &envconf.Option{}); err != nil {
+	if err := envconf.Load(&conf, envconf.UseDotEnv()); err != nil {
 		log.Fatal(err)
 	}
 

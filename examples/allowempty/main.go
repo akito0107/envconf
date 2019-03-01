@@ -16,7 +16,7 @@ func main() {
 	var conf Config
 
 	// load environment variables with `Load` method
-	if err := envconf.Load(&conf, &envconf.Option{}); err != nil {
+	if err := envconf.Load(&conf); err != nil {
 		log.Fatal(err)
 	}
 
@@ -25,7 +25,7 @@ func main() {
 	conf2 := Config{DBPort: 12345} // passing default param
 
 	// load environment variables with `Load` method
-	if err := envconf.Load(&conf2, &envconf.Option{}); err != nil {
+	if err := envconf.Load(&conf2); err != nil {
 		log.Fatal(err)
 	}
 

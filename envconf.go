@@ -30,7 +30,7 @@ type Option struct {
 	DotEnvNameAlias string
 }
 
-func Init(i interface{}, option *Option) error {
+func Load(i interface{}, option *Option) error {
 	if reflect.TypeOf(i).Kind() != reflect.Ptr {
 		return &NotPointerType{}
 	}

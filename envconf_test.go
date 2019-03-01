@@ -41,7 +41,7 @@ func TestInit(t *testing.T) {
 		}
 
 		var i in
-		if err := Init(&i); err != nil {
+		if err := Init(&i, &Option{}); err != nil {
 			t.Fatal(err)
 		}
 
@@ -58,4 +58,90 @@ func TestInit(t *testing.T) {
 		}
 	})
 
+	t.Run("error when null env", func(t *testing.T) {
+		defenv := getenv
+
+		getenv = func(key string) string {
+			t.Helper()
+			switch key {
+			case "STR":
+				return "str"
+			case "INTEGER":
+				return "123"
+			case "UINT":
+				return "12"
+			case "FLOAT":
+				return "1.234"
+			}
+			return ""
+		}
+
+		defer func() {
+			getenv = defenv
+		}()
+
+		type in struct {
+			Str     string  `env:"STR"`
+			Integer int     `env:"INTEGER"`
+			Bool    bool    `env:"BOOL"`
+			Uint    uint    `env:"UINT"`
+			Float   float64 `env:"FLOAT"`
+		}
+
+		var i in
+		err := Init(&i, &Option{})
+		if err == nil {
+			t.Fatal("must be err")
+		}
+
+		if ok, _ := IsEnvironmentVariableNotFound(err); !ok {
+			t.Errorf("should be environmentValueNotFound but %+v", err)
+		}
+
+	})
+
+	t.Run("allow empty", func(t *testing.T) {
+		defenv := getenv
+
+		getenv = func(key string) string {
+			t.Helper()
+			switch key {
+			case "STR":
+				return "str"
+			case "INTEGER":
+				return "123"
+			case "UINT":
+				return "12"
+			}
+			return ""
+		}
+
+		defer func() {
+			getenv = defenv
+		}()
+
+		type in struct {
+			Str     string  `env:"STR"`
+			Integer int     `env:"INTEGER"`
+			Bool    bool    `env:"BOOL,allow-empty"`
+			Uint    uint    `env:"UINT"`
+			Float   float64 `env:"FLOAT,allow-empty"`
+		}
+
+		var i in
+		if err := Init(&i, &Option{}); err != nil {
+			t.Fatal(err)
+		}
+
+		expect := in{
+			Str:     "str",
+			Uint:    12,
+			Integer: 123,
+		}
+
+		if !reflect.DeepEqual(i, expect) {
+			t.Errorf("must be same %+v and %+v", i, expect)
+		}
+
+	})
 }

@@ -4,7 +4,9 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 
+	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 )
 
@@ -18,17 +20,44 @@ type unsupportedType interface {
 	UnsupportedType() (propName string, typeName string)
 }
 
-//go:generate generr -t environmentValueNotFound -t environmentValueNotFound -i -c -u
-type environmentValueNotFound interface {
-	EnvironmentValueNotFound() (envname string)
+//go:generate generr -t environmentVariableNotFound -t environmentVariableNotFound -i -c -u
+type environmentVariableNotFound interface {
+	EnvironmentVariableNotFound() (envname string)
 }
 
-func Init(i interface{}) error {
+type Option struct {
+	UseDotEnv       bool
+	DotEnvNameAlias string
+}
+
+func Init(i interface{}, option *Option) error {
 	if reflect.TypeOf(i).Kind() != reflect.Ptr {
 		return &NotPointerType{}
 	}
+
+	if option.UseDotEnv {
+		fname := ".env"
+		if option.DotEnvNameAlias != "" {
+			fname = option.DotEnvNameAlias
+		}
+		loadEnv(fname)
+	}
+
 	if err := replaceEnv(i); err != nil {
-		return err
+		return errors.Wrap(err, "init: relpaceEnv failed")
+	}
+
+	return nil
+}
+
+func loadEnv(fname string) error {
+	load := os.Getenv("GOENVCONF_LOAD_DOTFILE")
+	if load == "disable" {
+		return nil
+	}
+
+	if err := godotenv.Load(fname); err != nil {
+		return errors.Wrap(err, "init: godotenv Load failed")
 	}
 
 	return nil
@@ -50,13 +79,25 @@ func replaceEnv(i interface{}) error {
 	for j := 0; j < t.NumField(); j++ {
 		sf := t.Field(j)
 		tag := sf.Tag
-		envname := tag.Get("env")
-		if envname == "" {
+		env := tag.Get("env")
+		if env == "" {
 			continue
 		}
+
+		var allowEmpty bool
+
+		strs := strings.Split(env, ",")
+		envname := strs[0]
+		if len(strs) == 2 && strs[1] == "allow-empty" {
+			allowEmpty = true
+		}
+
 		value := getenv(envname)
 		if value == "" {
-			return &EnvironmentValueNotFound{Envname: envname}
+			if allowEmpty {
+				continue
+			}
+			return &EnvironmentVariableNotFound{Envname: envname}
 		}
 		f := v.Elem().Field(j)
 

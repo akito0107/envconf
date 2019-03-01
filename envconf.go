@@ -51,12 +51,12 @@ func Load(i interface{}, option *Option) error {
 }
 
 func loadEnv(fname string) error {
-	load := os.Getenv("GOENVCONF_LOAD_DOTFILE")
+	load := os.Getenv("ENVCONF_LOAD_DOTFILE")
 	if load == "disable" {
 		return nil
 	}
 
-	if err := godotenv.Load(fname); err != nil {
+	if err := godotenv.Overload(fname); err != nil {
 		return errors.Wrap(err, "init: godotenv Load failed")
 	}
 

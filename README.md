@@ -56,6 +56,7 @@ $ go run main.go
 ```
 
 2. [Blank environment variables](./examples/blank)
+
 `envconf.Load`, in default behaviour, returns error when specified environment variables are blank.
 If missing `DB_PORT` variable, returns error.
 
@@ -67,6 +68,7 @@ exit status 1
 ```
 
 3. [Allow Empty](./examples/allowempty)
+
 If you want to allow empty variables, you must specify `allow-empty` on `env` tag.
 This feature convenient for setting default parameter.
 
@@ -100,14 +102,46 @@ log.Printf("%+v\n", conf2) // 2019/03/01 16:57:57 {DBHost:localhost DBPort:12345
 
 4. [with Dotenv](./examples/dotenv)
 
-```sh
-$ export DB_PORT=5432 # only set DB_PORT
-$ go run main.go
-2019/03/01 16:57:57 {DBHost:localhost DBPort:0}
-2019/03/01 16:57:57 {DBHost:localhost DBPort:12345}
+`envconf` support using with `dotenv` by passing UseDotEnv option.
+
+*In default case, .env vars override environment variables*
+
+Go code.
+```go
+// load environment variables and dotenv variables with `Load` method
+if err := envconf.Load(&conf, &envconf.Option{UseDotEnv: true}); err != nil {
+	log.Fatal(err)
+}
+log.Printf("%+v\n", conf)
 ```
 
+```sh
+$ cat .env
+DB_USER=test
 
+$ export DB_HOST=localhost
+$ export DB_PORT=5432
+$ export DB_USER=test2
+$ go run main.go
+2019/03/01 17:15:31 {DBHost:localhost DBPort:5432 DBUser:test} # overrided .env
+```
+
+5. [disable Dotenv via ENVCONF_LOAD_DOTFILE environment variables](./examples/disable)
+
+if `ENVCONF_LOAD_DOTFILE` is set to `disable`,  skip load `.env`.
+This feature convenient for avoid to set undesired vars from `.env`.
+
+```sh
+$ cat .env
+DB_USER=test
+
+$ export ENVCONF_LOAD_DOTFILE=disable
+$ export DB_HOST=localhost
+$ export DB_PORT=5432
+$ export DB_USER=test2
+$ go run main.go
+2019/03/01 17:15:31 {DBHost:localhost DBPort:5432 DBUser:test2} # overrided .env
+```
 
 ## License
 This project is licensed under the Apache License 2.0 License - see the [LICENSE](LICENSE) file for details
